@@ -5,23 +5,24 @@
  ******************************************************************/
 
 
-# include <stdio.h>
-# include <stdlib.h>
+# include <cstdio>
+# include <cstdlib>
 # include <unistd.h>
 # include <sys/types.h>
 # include <sys/ipc.h>
 # include <sys/shm.h>
 # include <sys/sem.h>
-# include <sys/time.h>
-# include <math.h>
-# include <errno.h>
-# include <string.h>
+# include <ctime>
+# include <cmath>
+# include <cerrno>
+# include <cstring>
 # include <pthread.h>
-# include <ctype.h>
+# include <cctype>
 # include <iostream>
+# include <random>
 using namespace std;
 
-# define SEM_KEY 0x50 // Change this number as needed
+#define SEM_KEY 0x77 // Change this number as needed
 
 union semun {
     int val;               /* used for SETVAL only */
@@ -35,3 +36,5 @@ int sem_init (int, int, int);
 void sem_wait (int, short unsigned int);
 void sem_signal (int, short unsigned int);
 int sem_close (int);
+unsigned int randInt(int maxRange);
+void checkValidity(int returnValue);
