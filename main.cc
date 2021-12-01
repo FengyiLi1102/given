@@ -8,26 +8,6 @@
 void *producer (void *id);
 void *consumer (void *id);
 
-struct Job;
-struct Params;
-
-typedef Job* JobPtr;
-typedef Params* ParamPtr;
-
-struct Job {
-    unsigned int id;
-    unsigned int duration;
-
-    Job(unsigned int id, unsigned int duration) {
-        this->id = id;
-        this->duration = duration;
-    }
-};
-
-struct Params {
-    int semID;
-
-};
 
 int main (int argc, char **argv)
 {
@@ -71,7 +51,11 @@ int main (int argc, char **argv)
   checkValidity(jobsFlag);
   cout << "Semaphore set of jobs is initialised successfully.\n";
 
+  /* Circular queue for all jobs */
+  auto jobs = new (nothrow) Job[sizeOfQueue];
 
+  /* Create the parameter struct */
+  auto paramsPtr = new (nothrow) Params(semID, jobs);
 
 
 
@@ -85,15 +69,20 @@ int main (int argc, char **argv)
 }
 
 
-void *producer (void *parameter) 
+void *producer (void *parameters)
 {
 
   // TODO
 
-  /* Create the job */
-  Job* newJob = new (nothrow) Job(randInt());
+  /* Create the job with a default ID*/
+  Job* newJob = new (nothrow) Job(0, randInt(5));
 
-  int *param = (int *) parameter;
+  auto *params = (Params *) parameters;
+
+  sem_wait(params->semID, 1);           // Check if it is empty in the queue
+  sem_wait(params->semID, 0);           // Mutual exclusion
+  params->jobSet.push_back(newJob);     // Add a new produced job into the queue
+  sem_signal(params->semID, 0);         // Release mutual exclusion
 
   cout << "Parameter = " << *param << endl;
 

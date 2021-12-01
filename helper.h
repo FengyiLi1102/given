@@ -20,6 +20,7 @@
 # include <cctype>
 # include <iostream>
 # include <random>
+# include <vector>
 using namespace std;
 
 #define SEM_KEY 0x77 // Change this number as needed
@@ -38,3 +39,38 @@ void sem_signal (int, short unsigned int);
 int sem_close (int);
 unsigned int randInt(int maxRange);
 void checkValidity(int returnValue);
+
+
+class Job;
+struct Params;
+
+typedef Job* JobPtr;
+typedef Params* ParamPtr;
+
+class Job {
+    unsigned int id;
+    unsigned int duration;
+
+public:
+    Job(unsigned int id, unsigned int duration) {
+        this->id = id;
+        this->duration = duration;
+    }
+
+    Job() = default;
+};
+
+struct Params {
+    int semID;
+    std::vector<Job*> jobSet;
+    int num = 0;
+
+    explicit Params(int semID) {
+        this->semID = semID;
+    }
+
+    ~Params() {
+        for (int i = 0; i < jobSet.size(); i++)
+            delete jobSet.front();
+    }
+};
