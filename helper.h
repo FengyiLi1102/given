@@ -69,16 +69,14 @@ public:
 };
 
 struct Params {
-    int semID;
-    unsigned int queueSize, jobPerPro, position = 0;
-    int proID, conID;
+    int semID, ID = -1;
+    unsigned int queueSize, jobPerPro;
 
     Params(int semID, int queueSize,
            int jobPerPro, int ID) {
-      this->semID = semID;
-      this->queueSize = queueSize;
-      this->jobPerPro = jobPerPro;
-      this->proID = ID;
-      this->conID = ID;
+        this->semID = semID;
+        this->queueSize = queueSize;
+        this->jobPerPro = jobPerPro;
+        this->ID = ID;
     }
 };

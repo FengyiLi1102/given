@@ -9,6 +9,7 @@ void *producer (void *parameter);
 void *consumer (void *parameters);
 
 auto *jobSet = new vector<Job*>();
+auto position = 0;
 
 int main (int argc, char **argv) {
   if (argc < 5) {
@@ -47,18 +48,20 @@ int main (int argc, char **argv) {
   checkValidity(jobsFlag);
   cout << "Semaphore set of jobs is initialised successfully.\n";
 
+  cout << "====================== START ==============================\n";
+
   /* Create the parameter struct */
-  auto params = Params(semID, sizeOfQueue, jobsProducer, -1);
+
 
   /* Producer threads */
   for (int i = 0; i < numProducer; i++) {
-      params.proID = i + 1;
+      auto params = Params(semID, sizeOfQueue, jobsProducer, i+1);
       pthread_create(&producerId[i], NULL, producer, (void *) &params);
   }
 
   /* Consumer threads */
   for (int i = 0; i < numConsumer; i++) {
-      params.conID = i;
+      auto params = Params(semID, sizeOfQueue, jobsProducer, i+1);
       pthread_create(&consumerId[i], NULL, consumer, (void *) &params);
   }
 
@@ -70,18 +73,19 @@ int main (int argc, char **argv) {
 
   cout << "Doing some work after the join" << endl;
 
+  pthread_exit(NULL);
+
   return 0;
 }
 
 
 void *producer (void *parameters) {
-  // TODO
   auto *params = (Params *) parameters;
 
   for (unsigned int n = 0; n < params->jobPerPro; n++) {
 
       /* Create the job with a default ID*/
-      Job* newJob = new (nothrow) Job(params->position, randInt(10));
+      Job* newJob = new (nothrow) Job(position, randInt(10));
 
       sem_wait(params->semID, 1);           // Check if it is empty in the queue
 
@@ -97,13 +101,13 @@ void *producer (void *parameters) {
       sem_signal(params->semID, 0);         // Release mutual exclusion
       sem_signal(params->semID, 2);         // Signal the jobs part
 
-      if (params->position == (params->queueSize - 1))
-          params->position = 0;
+      if (position == (params->queueSize - 1))
+          position = 0;
       else
-          params->position++;
+          position++;
 
-      cout << "Producer(" << params->proID << "): Job id " << params->position
-           << "duration " << randInt(10) << endl;
+      cout << "Producer(" << params->ID << "): Job id " << position
+           << " duration " << randInt(10) << endl;
 
       sleep (randInt(5));
   }
@@ -133,10 +137,10 @@ void *consumer (void *parameters)
         sem_signal(params->semID, 0);         // Release mutual exclusion
         sem_signal(params->semID, 1);         // Signal the space part
 
-        params->position = newPosition;
+        position = newPosition;
 
-        cout << "Consumer(" << params->conID << "): Job id " << newPosition
-             << "executing sleep duration " << duration << endl;
+        cout << "Consumer(" << params->ID << "): Job id " << newPosition
+             << " executing sleep duration " << duration << endl;
 
         sleep (duration);
 
