@@ -139,7 +139,7 @@ void *consumer (void *parameters)
 
         position = newPosition;
 
-        cout << "Consumer(" << params->ID << "): Job id " << newPosition
+        cout << "\nConsumer(" << params->ID << "): Job id " << newPosition
              << " executing sleep duration " << duration << endl;
 
         sleep (duration);
