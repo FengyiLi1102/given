@@ -58,27 +58,27 @@ public:
     }
 
     Job() = default;
+
+    unsigned int getDuration() const {
+        return duration;
+    }
+
+    unsigned int getID() const {
+        return this->id;
+    }
 };
 
 struct Params {
     int semID;
-    std::vector<Job*> *jobSet = nullptr;
-    int position = 0;
-    std::vector<int> producerIDs;
-    std::vector<int> consumerIDs;
+    unsigned int queueSize, jobPerPro, position = 0;
+    int proID, conID;
 
-    Params(int semID, int numPro, int numCon) {
+    Params(int semID, int queueSize,
+           int jobPerPro, int ID) {
       this->semID = semID;
-
-      for (int i = 0; i < numPro; i++)
-        producerIDs.push_back(i);
-
-      for (int i = 0; i < numCon; i++)
-        consumerIDs.push_back(i);
-    }
-
-    ~Params() {
-        for (int i = 0; i < jobSet->size(); i++)
-            delete jobSet->front();
+      this->queueSize = queueSize;
+      this->jobPerPro = jobPerPro;
+      this->proID = ID;
+      this->conID = ID;
     }
 };
