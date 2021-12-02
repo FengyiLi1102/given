@@ -23,7 +23,7 @@
 # include <vector>
 using namespace std;
 
-#define SEM_KEY 0x77 // Change this number as needed
+#define SEM_KEY 0x87 // Change this number as needed
 
 union semun {
     int val;               /* used for SETVAL only */

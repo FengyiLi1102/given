@@ -11,7 +11,6 @@ void *consumer (void *parameters);
 auto *jobSet = new vector<Job*>();
 
 int main (int argc, char **argv) {
-  // TODO
   if (argc < 5) {
       cerr << "ERROR: fewer parameters provided.\n";
       exit(0);
