@@ -53,16 +53,17 @@ int main (int argc, char **argv) {
   /* Create the parameter struct */
 
 
+  auto params = new (nothrow) Params(semID, sizeOfQueue, jobsProducer, -1);
   /* Producer threads */
   for (int i = 0; i < numProducer; i++) {
-      auto params = Params(semID, sizeOfQueue, jobsProducer, i+1);
-      pthread_create(&producerId[i], NULL, producer, (void *) &params);
+      params->setId(i+1);
+      pthread_create(&producerId[i], NULL, producer, (void *) params);
   }
 
   /* Consumer threads */
   for (int i = 0; i < numConsumer; i++) {
-      auto params = Params(semID, sizeOfQueue, jobsProducer, i+1);
-      pthread_create(&consumerId[i], NULL, consumer, (void *) &params);
+      params->setId(i+1);
+      pthread_create(&consumerId[i], NULL, consumer, (void *) params);
   }
 
   for (auto& thread : producerId)
@@ -139,7 +140,7 @@ void *consumer (void *parameters)
 
         position = newPosition;
 
-        cout << "\nConsumer(" << params->ID << "): Job id " << newPosition
+        cout << "Consumer(" << params->ID << "): Job id " << newPosition
              << " executing sleep duration " << duration << endl;
 
         sleep (duration);

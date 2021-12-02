@@ -79,4 +79,8 @@ struct Params {
         this->jobPerPro = jobPerPro;
         this->ID = ID;
     }
+
+    void setId(int i) {
+        this->ID = i;
+    }
 };
