@@ -51,15 +51,12 @@ int main (int argc, char **argv)
   checkValidity(jobsFlag);
   cout << "Semaphore set of jobs is initialised successfully.\n";
 
-  /* Circular queue for all jobs */
-  auto jobs = new (nothrow) Job[sizeOfQueue];
-
   /* Create the parameter struct */
-  auto paramsPtr = new (nothrow) Params(semID, jobs);
+  auto paramsPtr = new (nothrow) Params(semID, numProducer, numConsumer);
 
 
 
-  pthread_create (&producerid, NULL, producer, (void *) &parameter);
+  pthread_create (&producerid, NULL, producer, (void *) &paramsPtr);
 
   pthread_join (producerid, NULL);
 
@@ -73,28 +70,35 @@ void *producer (void *parameters)
 {
 
   // TODO
-
-  /* Create the job with a default ID*/
-  Job* newJob = new (nothrow) Job(0, randInt(5));
-
   auto *params = (Params *) parameters;
 
+  /* Create the job with a default ID*/
+  Job* newJob = new (nothrow) Job(params->position, randInt(10));
+
   sem_wait(params->semID, 1);           // Check if it is empty in the queue
+
+  clock_t begin = clock();
+
   sem_wait(params->semID, 0);           // Mutual exclusion
-  params->jobSet.push_back(newJob);     // Add a new produced job into the queue
+  if ((begin - clock()) / CLOCKS_PER_SEC > 20 )
+    exit(1);
+
+  params->jobSet->push_back(newJob);    // Add a new produced job into the queue
   sem_signal(params->semID, 0);         // Release mutual exclusion
+  sem_signal(params->semID, 2);         // Signal the jobs part
 
-  cout << "Parameter = " << *param << endl;
+  if ()
+  params->position++;
 
-  sleep (5);
+  cout << "Producer(" << params->num << "): Job id " << ;
 
-  cout << "\nThat was a good sleep - thank you \n" << endl;
+  sleep (randInt(5));
 
   pthread_exit(0);
 }
 
 
-void *consumer (void *id) 
+void *consumer (void *&id)
 {
     // TODO 
 

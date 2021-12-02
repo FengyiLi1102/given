@@ -62,15 +62,23 @@ public:
 
 struct Params {
     int semID;
-    std::vector<Job*> jobSet;
-    int num = 0;
+    std::vector<Job*> *jobSet = nullptr;
+    int position = 0;
+    std::vector<int> producerIDs;
+    std::vector<int> consumerIDs;
 
-    explicit Params(int semID) {
-        this->semID = semID;
+    Params(int semID, int numPro, int numCon) {
+      this->semID = semID;
+
+      for (int i = 0; i < numPro; i++)
+        producerIDs.push_back(i);
+
+      for (int i = 0; i < numCon; i++)
+        consumerIDs.push_back(i);
     }
 
     ~Params() {
-        for (int i = 0; i < jobSet.size(); i++)
-            delete jobSet.front();
+        for (int i = 0; i < jobSet->size(); i++)
+            delete jobSet->front();
     }
 };
