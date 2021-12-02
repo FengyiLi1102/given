@@ -9,7 +9,7 @@ void *producer (void *parameter);
 void *consumer (void *parameters);
 
 auto *jobSet = new vector<Job*>();
-auto position = 0;
+unsigned int position = 0;
 
 int main (int argc, char **argv) {
   if (argc < 5) {
@@ -112,7 +112,7 @@ void *producer (void *parameters) {
       sleep (randInt(5));
   }
 
-  pthread_exit(0);
+  return 0;
 }
 
 
@@ -144,12 +144,12 @@ void *consumer (void *parameters)
 
         sleep (duration);
 
-        begin = clock();
-        sem_wait(params->semID, 2);
-        if ((begin - clock()) / CLOCKS_PER_SEC > 20) {
-            cerr << "NO JOBS IN THE QUEUE.\n";
-            pthread_exit(0);
-        }
+//        begin = clock();
+//        sem_wait(params->semID, 2);
+//        if ((begin - clock()) / CLOCKS_PER_SEC > 20) {
+//            cerr << "NO JOBS IN THE QUEUE.\n";
+//            pthread_exit(0);
+//        }
     }
 
     pthread_exit (0);
