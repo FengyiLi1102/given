@@ -44,7 +44,7 @@ int main (int argc, char **argv) {
   cout << "Semaphore set of space is initialised successfully.\n";
 
   /* Initialised semaphores for the jobs in the queue */
-  auto jobsFlag = sem_init(semID, 3, 0);
+  auto jobsFlag = sem_init(semID, 2, 0);
   checkValidity(jobsFlag);
   cout << "Semaphore set of jobs is initialised successfully.\n";
 
