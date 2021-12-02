@@ -21,6 +21,9 @@
 # include <iostream>
 # include <random>
 # include <vector>
+#include <thread>
+#include <chrono>
+#include <deque>
 using namespace std;
 
 #define SEM_KEY 0x87 // Change this number as needed
@@ -39,6 +42,7 @@ void sem_signal (int, short unsigned int);
 int sem_close (int);
 unsigned int randInt(int maxRange);
 void checkValidity(int returnValue);
+void sem_timeout (int id, short unsigned int num, unsigned int const timeout);
 
 
 class Job;
@@ -59,6 +63,17 @@ public:
 
     Job() = default;
 
+    Job& operator=(Job const &other) {
+        this->id = other.id;
+        this->duration = other.duration;
+
+        return *this;
+    }
+
+    Job(Job const &other) {
+        *this = other;
+    }
+
     unsigned int getDuration() const {
         return duration;
     }
@@ -66,21 +81,18 @@ public:
     unsigned int getID() const {
         return this->id;
     }
+
+    void setID(unsigned int id) {
+        this->id = id;
+    }
 };
 
 struct Params {
-    int semID, ID = -1;
-    unsigned int queueSize, jobPerPro;
+    int semID;
+    unsigned int jobPerPro;
 
-    Params(int semID, int queueSize,
-           int jobPerPro, int ID) {
+    Params(int semID,  int jobPerPro) {
         this->semID = semID;
-        this->queueSize = queueSize;
         this->jobPerPro = jobPerPro;
-        this->ID = ID;
-    }
-
-    void setId(int i) {
-        this->ID = i;
     }
 };

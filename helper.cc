@@ -59,6 +59,14 @@ void sem_signal (int id, short unsigned int num)
   semop (id, op, 1);
 }
 
+void sem_timeout (int id, short unsigned int num, unsigned int const timeout)
+{
+    struct sembuf op[] = {
+            {num, -1, SEM_UNDO}
+    };
+    semtimedop(id, op, 1, reinterpret_cast<const timespec *>(timeout));
+}
+
 int sem_close (int id)
 {
   if (semctl (id, 0, IPC_RMID, 0) < 0)

@@ -1,4 +1,4 @@
-CC=g++ -Wall
+CC=g++ -std=c++11 -Wall
 
 all: main
 

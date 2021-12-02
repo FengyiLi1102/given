@@ -3,13 +3,17 @@
  * example of creating and using a thread is provided.
  ******************************************************************/
 
+
 #include "helper.h"
 
-void *producer (void *parameter);
-void *consumer (void *parameters);
+void producer (int producerID, int jobsPerProducer, int semID);
+void consumer (int consumerID, int semID);
 
-auto *jobSet = new vector<Job*>();
-unsigned int position = 0;
+const unsigned int TIME_TO_WAIT = 20;
+
+auto *jobSet = new vector<Job>();
+auto *positionQueue = new deque<unsigned int>();
+//std::counting_semaphore<100> *space, *job;
 
 int main (int argc, char **argv) {
   if (argc < 5) {
@@ -23,7 +27,7 @@ int main (int argc, char **argv) {
   auto numConsumer = check_arg(argv[4]);             // number of consumers
 
   /* Each producer and consumer uses one thread */
-  pthread_t producerId[numProducer], consumerId[numConsumer];
+  thread producerId[numProducer], consumerId[numConsumer];
 
   /* Create the semaphore set including mutual exclusion, space and jobs */
   auto semID = sem_create(SEM_KEY, 3);
@@ -52,107 +56,95 @@ int main (int argc, char **argv) {
 
   /* Create the parameter struct */
 
+  for (int i = 0; i < sizeOfQueue; i++)
+      positionQueue->push_back(i);
 
-  auto params = new (nothrow) Params(semID, sizeOfQueue, jobsProducer, -1);
   /* Producer threads */
   for (int i = 0; i < numProducer; i++) {
-      params->setId(i+1);
-      pthread_create(&producerId[i], NULL, producer, (void *) params);
+      producerId[i] = thread(producer, i+1, jobsProducer, semID);
   }
 
   /* Consumer threads */
   for (int i = 0; i < numConsumer; i++) {
-      params->setId(i+1);
-      pthread_create(&consumerId[i], NULL, consumer, (void *) params);
+      consumerId[i] = thread(consumer, i+1, semID);
   }
 
   for (auto& thread : producerId)
-      pthread_join(thread, NULL);
+      thread.join();
 
   for (auto& thread : consumerId)
-      pthread_join(thread, NULL);
+      thread.join();
 
-  cout << "Doing some work after the join" << endl;
+  cout << "All jobs have been finished." << endl;
 
-  pthread_exit(NULL);
+  sem_close(semID);
 
   return 0;
 }
 
 
-void *producer (void *parameters) {
-  auto *params = (Params *) parameters;
-
-  for (unsigned int n = 0; n < params->jobPerPro; n++) {
+void producer (int producerID, int jobsPerProducer, int semID) {
+  for (int n = 0; n < jobsPerProducer; n++) {
 
       /* Create the job with a default ID*/
-      Job* newJob = new (nothrow) Job(position, randInt(10));
+      Job newJob = Job(-1, randInt(10));
 
-      sem_wait(params->semID, 1);           // Check if it is empty in the queue
+      sem_wait(semID, 1);           // Check if it is empty in the queue
 
       clock_t begin = clock();
 
-      sem_wait(params->semID, 0);           // Mutual exclusion
-      if ((begin - clock()) / CLOCKS_PER_SEC > 20 ) {
+      sem_wait(semID, 0);           // Mutual exclusion
+      if ((begin - clock()) / CLOCKS_PER_SEC > TIME_TO_WAIT ) {
           cerr << "ERROR: wait more than 20s.\n";
-          pthread_exit(0);
+          return;
       }
-
+      newJob.setID(positionQueue->front());
       jobSet->push_back(newJob);    // Add a new produced job into the queue
-      sem_signal(params->semID, 0);         // Release mutual exclusion
-      sem_signal(params->semID, 2);         // Signal the jobs part
+      cout << "Producer(" << producerID << "): Job id " << positionQueue->front()
+           << " duration " << newJob.getDuration() << endl;
+      positionQueue->pop_front();
+      sem_signal(semID, 0);         // Release mutual exclusion
+      sem_signal(semID, 2);         // Signal the jobs part
 
-      if (position == (params->queueSize - 1))
-          position = 0;
-      else
-          position++;
-
-      cout << "Producer(" << params->ID << "): Job id " << position
-           << " duration " << randInt(10) << endl;
 
       sleep (randInt(5));
   }
 
-  return 0;
+  cout << "Producer(" << producerID << "): No more jobs to generate." << endl;
 }
 
 
-void *consumer (void *parameters)
+void consumer (int consumerID, int semID)
 {
-    auto *params = (Params *) parameters;
-
     while (true) {
-        sem_wait(params->semID, 2);           // Check if there is an item
-        clock_t begin = clock();
+//        clock_t begin = clock();
+        sem_timeout(semID, 2, TIME_TO_WAIT);
+//        sem_wait(semID, 2);           // Check if there is an item
+//        clock_t end = clock();
+//        if ((begin - end) / CLOCKS_PER_SEC > 20 ) {
+//            cerr << "ERROR: wait more than 20s.\n";
+//            break;
+//        }
 
-        sem_wait(params->semID, 0);           // Mutual exclusion
+        begin = clock();
+        sem_wait(semID, 0);           // Mutual exclusion
         if ((begin - clock()) / CLOCKS_PER_SEC > 20 ) {
             cerr << "ERROR: wait more than 20s.\n";
-            pthread_exit(0);
+            return;
         }
-        unsigned int duration = jobSet->front()->getDuration();
-        unsigned int newPosition = jobSet->front()->getID();
 
-        delete jobSet->front();               // Remove the first job in the queue
-        jobSet->erase(jobSet->begin());       // Delete the job in the queue
-        sem_signal(params->semID, 0);         // Release mutual exclusion
-        sem_signal(params->semID, 1);         // Signal the space part
+//        Job thisJob = jobSet->front();
+        unsigned int id = jobSet->front().getID();
+        unsigned int duration = jobSet->front().getDuration();
 
-        position = newPosition;
-
-        cout << "Consumer(" << params->ID << "): Job id " << newPosition
+        cout << "Consumer(" << consumerID << "): Job id " << id
              << " executing sleep duration " << duration << endl;
-
+        jobSet->erase(jobSet->begin());       // Delete the job in the queue
+        positionQueue->push_back(id);
+        sem_signal(semID, 0);         // Release mutual exclusion
+        sem_signal(semID, 1);         // Signal the space part
         sleep (duration);
-
-//        begin = clock();
-//        sem_wait(params->semID, 2);
-//        if ((begin - clock()) / CLOCKS_PER_SEC > 20) {
-//            cerr << "NO JOBS IN THE QUEUE.\n";
-//            pthread_exit(0);
-//        }
     }
 
-    pthread_exit (0);
-
+    cout << "Consumer(" << consumerID << "): No more jobs left\n";
 }
