@@ -79,7 +79,7 @@ void *producer (void *parameters) {
   // TODO
   auto *params = (Params *) parameters;
 
-  for (int n = 0; n < params->jobPerPro; n++) {
+  for (unsigned int n = 0; n < params->jobPerPro; n++) {
 
       /* Create the job with a default ID*/
       Job* newJob = new (nothrow) Job(params->position, randInt(10));
