@@ -117,8 +117,11 @@ void producer (int producerID, int jobsPerProducer, int semID) {
 void consumer (int consumerID, int semID)
 {
     while (true) {
-//        clock_t begin = clock();
-        sem_timeout(semID, 2, TIME_TO_WAIT);
+//       clock_t begin = clock();
+       if (sem_timeout_wait(semID, 2, TIME_TO_WAIT) != 0) {
+           cerr << "ERROR: wait more than 20s.\n";
+           return;
+       }
 //        sem_wait(semID, 2);           // Check if there is an item
 //        clock_t end = clock();
 //        if ((begin - end) / CLOCKS_PER_SEC > 20 ) {
@@ -126,12 +129,15 @@ void consumer (int consumerID, int semID)
 //            break;
 //        }
 
-        begin = clock();
-        sem_wait(semID, 0);           // Mutual exclusion
-        if ((begin - clock()) / CLOCKS_PER_SEC > 20 ) {
-            cerr << "ERROR: wait more than 20s.\n";
-            return;
-        }
+//        begin = clock();
+       if (sem_timeout_wait(semID, 0, TIME_TO_WAIT) != 0) {
+           cerr << "ERROR: wait more than 20s.\n";
+           return;
+       }           // Mutual exclusion
+//        if ((begin - clock()) / CLOCKS_PER_SEC > 20 ) {
+//            cerr << "ERROR: wait more than 20s.\n";
+//            return;
+//        }
 
 //        Job thisJob = jobSet->front();
         unsigned int id = jobSet->front().getID();

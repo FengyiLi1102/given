@@ -42,8 +42,8 @@ void sem_signal (int, short unsigned int);
 int sem_close (int);
 unsigned int randInt(int maxRange);
 void checkValidity(int returnValue);
-void sem_timeout (int id, short unsigned int num, unsigned int const timeout);
-
+int sem_timeout_wait (int id, short unsigned int num, unsigned int timeout);
+int sem_timeout_signal (int id, short unsigned int num, unsigned int timeout);
 
 class Job;
 struct Params;
