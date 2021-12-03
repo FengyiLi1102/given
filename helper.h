@@ -34,26 +34,9 @@ union semun {
     ushort *array;         /* used for GETALL and SETALL */
 };
 
-int check_arg (char *);
-int sem_create (key_t, int);
-int sem_init (int, int, int);
-void sem_wait (int, short unsigned int);
-void sem_signal (int, short unsigned int);
-int sem_close (int);
-unsigned int randInt(int maxRange);
-void checkValidity(int returnValue);
-int sem_timeout_wait (int id, short unsigned int num, unsigned int timeout);
-int sem_timeout_signal (int id, short unsigned int num, unsigned int timeout);
-
-class Job;
-struct Params;
-
-typedef Job* JobPtr;
-typedef Params* ParamPtr;
-
 class Job {
-    unsigned int id;
-    unsigned int duration;
+    unsigned int id{};
+    unsigned int duration{};
 
 public:
     Job(unsigned int id, unsigned int duration) {
@@ -63,12 +46,7 @@ public:
 
     Job() = default;
 
-    Job& operator=(Job const &other) {
-        this->id = other.id;
-        this->duration = other.duration;
-
-        return *this;
-    }
+    Job& operator=(Job const &other) = default;
 
     Job(Job const &other) {
         *this = other;
@@ -82,17 +60,18 @@ public:
         return this->id;
     }
 
-    void setID(unsigned int id) {
-        this->id = id;
+    void setID(unsigned int ID) {
+        this->id = ID;
     }
 };
 
-struct Params {
-    int semID;
-    unsigned int jobPerPro;
 
-    Params(int semID,  int jobPerPro) {
-        this->semID = semID;
-        this->jobPerPro = jobPerPro;
-    }
-};
+int check_arg (char *);
+int sem_create (key_t, int);
+int sem_init (int, int, int);
+void sem_wait (int, short unsigned int);
+void sem_signal (int, short unsigned int);
+int sem_close (int);
+unsigned int randInt(int maxRange);
+void checkValidity(int returnValue);
+int sem_timeout_wait (int id, short unsigned int num, timespec* timeout);
