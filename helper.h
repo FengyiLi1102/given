@@ -39,30 +39,19 @@ class Job {
     unsigned int duration{};
 
 public:
-    Job(unsigned int id, unsigned int duration) {
-        this->id = id;
-        this->duration = duration;
-    }
+    Job(unsigned int id, unsigned int duration);
 
     Job() = default;
 
     Job& operator=(Job const &other) = default;
 
-    Job(Job const &other) {
-        *this = other;
-    }
+    Job(Job const &other);
 
-    unsigned int getDuration() const {
-        return duration;
-    }
+    unsigned int getDuration() const;
 
-    unsigned int getID() const {
-        return this->id;
-    }
+    unsigned int getID() const;
 
-    void setID(unsigned int ID) {
-        this->id = ID;
-    }
+    void setID(unsigned int ID);
 };
 
 

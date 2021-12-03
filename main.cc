@@ -91,12 +91,12 @@ void producer (int producerID, int jobsPerProducer, int semID) {
 
         /* Mutual exclusion for the critical section */
         if (sem_timeout_wait(semID, 0, timeout) != 0) {
-          sem_wait(semID, 0);
-          cerr << "Producer(" << producerID << "): Wait more than "
-               << TIME_TO_WAIT << " seconds.\n";
-          sem_signal(semID, 0);
-          delete timeout;
-          exit(0);
+            sem_wait(semID, 0);
+            cerr << "Producer(" << producerID << "): Wait more than "
+                 << TIME_TO_WAIT << " seconds.\n";
+            sem_signal(semID, 0);
+            delete timeout;
+            exit(0);
         }
 
         newJob.setID(positionQueue->front());  // Reset the id for the new job
@@ -111,13 +111,14 @@ void producer (int producerID, int jobsPerProducer, int semID) {
         sem_signal(semID, 2);                  // Signal the jobs part
 
         sleep (randInt(5));   // Sleep for 1 to 5 seconds
-  }
+    }
 
-  sem_wait(semID, 0);
-  cout << "Producer(" << producerID << "): No more jobs to generate." << endl;
-  sem_signal(semID, 0);
+    /* To avoid messy printing in the terminal */
+    sem_wait(semID, 0);
+    cout << "Producer(" << producerID << "): No more jobs to generate." << endl;
+    sem_signal(semID, 0);
 
-  pthread_exit(nullptr);
+    pthread_exit(nullptr);
 }
 
 
@@ -129,6 +130,7 @@ void consumer (int consumerID, int semID) {
     while (true) {
         /* Check if there are any jobs */
         if (sem_timeout_wait(semID, 2, timeout) != 0) {
+            /* To avoid messy printing in the terminal */
             sem_wait(semID, 0);
             cerr << "Consumer(" << consumerID << "): No more jobs left\n";
             sem_signal(semID, 0);
@@ -152,6 +154,7 @@ void consumer (int consumerID, int semID) {
 
         sleep (removedJob.getDuration());
 
+        /* To avoid messy printing in the terminal */
         sem_wait(semID, 0);
         cout << "Consumer(" << consumerID << "): Job id " << removedJob.getID()
              << " completed\n";

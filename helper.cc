@@ -94,3 +94,29 @@ void checkValidity(int returnValue) {
         exit(0);
     }
 }
+
+
+Job::Job(unsigned int id, unsigned int duration) {
+    this->id = id;
+    this->duration = duration;
+}
+
+
+Job::Job(const Job &other) {
+    *this = other;
+}
+
+
+unsigned int Job::getID() const {
+    return id;
+}
+
+
+unsigned int Job::getDuration() const {
+    return duration;
+}
+
+
+void Job::setID(unsigned int ID) {
+    this->id = ID;
+}
