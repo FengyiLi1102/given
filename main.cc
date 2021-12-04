@@ -91,22 +91,20 @@ void producer (int producerID, int jobsPerProducer, int semID) {
 
         /* Mutual exclusion for the critical section */
         if (sem_timeout_wait(semID, 0, timeout) != 0) {
-            sem_wait(semID, 0);
-            cerr << "Producer(" << producerID << "): Wait more than "
-                 << TIME_TO_WAIT << " seconds.\n";
-            sem_signal(semID, 0);
+            printf("Producer(%d): Wit more than %d seconds\n", producerID,
+                   TIME_TO_WAIT);
             delete timeout;
             exit(0);
         }
 
         newJob.setID(positionQueue->front());  // Reset the id for the new job
         jobSet->push_back(newJob);             // Add the job into the queue
-        cout << "Producer(" << producerID << "): Job id "
-             << positionQueue->front()
-             << " duration " << newJob.getDuration() << endl;
         positionQueue->pop_front();            // Remove the used id
         sem_signal(semID, 0);
         /* Release mutual exclusion */
+
+        printf("Producer(%d): Job id %d duration %d\n", producerID,
+               positionQueue->front() ,newJob.getDuration());
 
         sem_signal(semID, 2);                  // Signal the jobs part
 
@@ -114,9 +112,7 @@ void producer (int producerID, int jobsPerProducer, int semID) {
     }
 
     /* To avoid messy printing in the terminal */
-    sem_wait(semID, 0);
-    cout << "Producer(" << producerID << "): No more jobs to generate." << endl;
-    sem_signal(semID, 0);
+    printf("Producer(%d): No more jobs to generate\n", producerID);
 
     pthread_exit(nullptr);
 }
@@ -131,9 +127,7 @@ void consumer (int consumerID, int semID) {
         /* Check if there are any jobs */
         if (sem_timeout_wait(semID, 2, timeout) != 0) {
             /* To avoid messy printing in the terminal */
-            sem_wait(semID, 0);
-            cerr << "Consumer(" << consumerID << "): No more jobs left\n";
-            sem_signal(semID, 0);
+            printf("Consumer(%d): No more jobs left\n", consumerID);
             delete timeout;
             pthread_exit(nullptr);
         }
@@ -141,23 +135,21 @@ void consumer (int consumerID, int semID) {
         /* Mutual exclusion for the critical section */
         sem_wait(semID, 0);
         Job removedJob = jobSet->front();
-
-        cout << "Consumer(" << consumerID << "): Job id "
-             << removedJob.getID() << " executing sleep duration "
-             << removedJob.getDuration() << endl;
         jobSet->erase(jobSet->begin());  // Delete the job in the queue
         positionQueue->push_back(removedJob.getID());  // Add the id back
         sem_signal(semID, 0);
         /* Release mutual exclusion */
+
+        printf("Consumer(%d): Job id %d executing sleep duration"
+               " %d\n", consumerID, removedJob.getID(),
+               removedJob.getDuration());
 
         sem_signal(semID, 1);  // Signal the space part
 
         sleep (removedJob.getDuration());
 
         /* To avoid messy printing in the terminal */
-        sem_wait(semID, 0);
-        cout << "Consumer(" << consumerID << "): Job id " << removedJob.getID()
-             << " completed\n";
-        sem_signal(semID, 0);
+        printf("Consumer(%d): Job id %d completed\n", consumerID,
+               removedJob.getID());
     }
 }
